@@ -1,0 +1,10 @@
+---
+  - name: Update cache
+    yum:
+      update_cache: true
+
+  - name: Install GCloud repo
+    template:
+      src: ./../templates/RedHat_repo.j2
+      dest: /etc/yum.repos.d/google-cloud-sdk.repo
+

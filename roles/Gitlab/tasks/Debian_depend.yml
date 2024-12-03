@@ -1,0 +1,20 @@
+
+---
+  - name: Update Package
+    apt:
+      update_cache: true
+
+  - name: Install Dependencies
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - curl
+      - postfix
+      - ca-certificates
+      - openssh-server
+      - tzdata
+      - perl
+
+  - name: Install Gitlab repo
+    shell: curl -s https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | sudo bash

@@ -1,0 +1,19 @@
+---
+  - name: Update package
+    apt:
+      update_cache: true
+
+  - name: Install dendencies
+    package:
+      name: "{{ item }}"
+      state: latest
+    loop:
+      - openjdk-11-jdk
+      - firewalld
+      - default-jre
+      - gnupg2
+      - apt-transport-https
+      - wget
+      - curl
+
+

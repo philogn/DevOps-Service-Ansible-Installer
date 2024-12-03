@@ -1,0 +1,14 @@
+--- 
+  - name: Add Jenkins to repo
+    shell:
+      "wget -O /etc/yum.repos.d/jenkins.repo \ https://pkg.jenkins.io/redhat-stable/jenkins.repo"
+    register: repo
+
+  - debug: var=repo
+
+  - name: Import Jenkins key
+    command: rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+  - name: Update packages
+    yum: 
+      update_cache: true

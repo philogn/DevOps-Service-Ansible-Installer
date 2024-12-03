@@ -1,0 +1,21 @@
+---
+  - name: Update packages
+    yum:
+      update_cache: true
+
+  - name: Install dependencies
+    package:
+      name: "{{ item }}"
+      state: latest
+    loop: 
+      - epel-release
+      - unzip
+      - wget
+      - java-1.8.0-openjdk
+      - java-1.8.0-openjdk-devel
+      - firewalld
+
+  - name: Switch Java version
+    alternatives: 
+      name: java
+      path: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.362.b09-4.el9.x86_64/jre/bin/java

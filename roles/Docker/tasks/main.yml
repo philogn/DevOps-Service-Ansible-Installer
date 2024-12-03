@@ -1,0 +1,46 @@
+---
+  - name: Update package
+    become: true
+    yum: 
+      update_cache: true
+    when: ansible_os_family == "RedHat"
+
+  - name: Update packages
+    become: true
+    apt:
+      update_cache: true
+    when: ansible_os_family == "Debian"
+
+  - name: Install dependencies
+    become: true
+    package:
+      name: curl
+      state: latest
+
+  - name: Install docker
+    become: true
+    shell:
+      'curl -fsSL https://get.docker.com/ | sh'
+    register: shell
+
+  - debug: var=shell
+
+  - name: Start Docker
+    become: true
+    service: 
+      name: docker
+      state: started
+      enabled: true
+
+  - name: Add user to group
+    user:
+      name: "{{ lookup('env', 'USER') }}"
+      groups: docker
+      append: yes
+
+  - name: Add current user to docker group
+    become: true
+    command: docker run hello-world
+    register: docker
+
+  - debug: var=docker

@@ -1,0 +1,84 @@
+---
+  - include_tasks: RedHat_depend.yml
+    when: ansible_os_family == "RedHat"
+
+  - include_tasks: Debian_depend.yml
+    when: ansible_os_family == "Debian"
+
+  - name: Config firewall
+    firewalld:
+      port: "{{ item }}"
+      state: enabled
+      permanent: true
+    loop: 
+      - 9000/tcp
+      - 80/tcp
+
+  - include_tasks: RedHat_sql.yml
+    when: ansible_os_family == "RedHat"
+
+  - include_tasks: Debian_sql.yml
+    when: ansible_os_family == "Debian"
+
+  - name: Change postgres password
+    user:
+      name: postgres
+      password: "{{ '{{ postgres_pass }}' | password_hash('sha512') }}"
+
+  - name: Create Database
+    shell: |
+      sudo su - postgres -c "createuser {{ user }}"
+      sudo -u postgres psql -c "ALTER USER {{ user }} WITH ENCRYPTED password '{{ user_pass }}';"
+      sudo -u postgres psql -c "CREATE DATABASE {{ database }} OWNER {{ user }};"
+      sudo -u postgres psql -c "grant all privileges on DATABASE {{ database }} to {{ user }};"
+
+  - name: Download and extract sonarqube
+    unarchive:
+      src: "{{ install_url }}"
+      dest: /opt/
+      remote_src: true
+
+  - name: Rename folder
+    command: bash -c 'mv /opt/sonarqube* {{ install_path }}'
+
+  - name: Set permission for sonarqube
+    shell: |
+      groupadd "{{ user }}"
+      useradd -c "user to run SonarQube" -d "{{ install_path }}" -g "{{ user }}" "{{ user }}"
+      chown "{{ user }}":"{{ user }}" "{{ install_path }}" -R
+
+  - name: Config sonarqube
+    shell: |
+      userconf="sonar.jdbc.username={{ user }}"
+      passwordconf="sonar.jdbc.password={{ user_pass }}"
+      dbconf="sonar.jdbc.url=jdbc:postgresql://localhost:5432/{{ database }}"
+      sed -i "$ a $userconf" /opt/sonarqube/conf/sonar.properties
+      sed -i "$ a $passwordconf" /opt/sonarqube/conf/sonar.properties
+      sed -i "$ a $dbconf" /opt/sonarqube/conf/sonar.properties
+      
+  - name: Increase Limit
+    shell: |
+      limit1="sonarqube   -   nofile   65536"
+      limit2="sonarqube   -   nproc    4096"
+      limit3="vm.max_map_count = 262144"
+      limit4="fs.file-max=65536"
+      sed -i "$ a $limit1" /etc/security/limits.conf
+      sed -i "$ a $limit2" /etc/security/limits.conf
+      sed -i "$ a $limit3" /etc/sysctl.conf
+      sed -i "$ a $limit4" /etc/sysctl.conf
+      sysctl --system
+     
+  - name: Config sonar service
+    template:
+      src: ./../templates/sonar.j2
+      dest: /etc/systemd/system/{{ service_name }}.service
+
+  - name: Reload system daemon
+    command: systemctl daemon-reload
+
+  - name: Start Sonarqube
+    service:
+      name: "{{ service_name }}"
+      state: started
+      enabled: true
+

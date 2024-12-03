@@ -1,0 +1,8 @@
+---
+
+install_url: https://download.sonatype.com/nexus/3/nexus-3.71.0-06-unix.tar.gz
+install_path: /opt/nexus
+
+user: nexus
+user_pass: nexus
+

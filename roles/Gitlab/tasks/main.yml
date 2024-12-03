@@ -1,0 +1,23 @@
+---
+  - include_tasks: Redhat_depend.yml
+    when: ansible_os_family == "RedHat" 
+
+  - include_tasks: Debian_depend.yml
+    when: ansible_os_family == "Debian"
+
+  - name: Install Gitlab
+    package: 
+      name: gitlab-ce
+      state: latest
+  
+  - name: Config firewall
+    firewalld: 
+      service: "{{ item }}"
+      permanent: true
+      state: enabled
+    loop:
+      - http
+      - https
+
+  - name: Reconfig Gitlab
+    command: gitlab-ctl reconfigure

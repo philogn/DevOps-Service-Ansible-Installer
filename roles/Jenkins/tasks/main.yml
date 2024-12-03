@@ -1,0 +1,41 @@
+---
+    - include_tasks: RedHat_depend.yml
+      when: ansible_os_family == "RedHat"
+
+    - include_tasks: Debian_depend.yml
+      when: ansible_os_family == "Debian"
+
+    - name: Config firewall
+      service: 
+        name: firewalld
+        state: started
+        enabled: true
+
+    - name: Open port 8080
+      firewalld:
+        port: 8080/tcp
+        state: enabled
+        permanent: true
+
+    - name: Restart firewall 
+      service: 
+        name: firewalld
+        state: restarted
+
+    - include_tasks: key_RedHat.yml
+      when: ansible_os_family == "RedHat"
+
+    - include_tasks: key_Debian.yml
+      when: ansible_os_family == "Debian"
+
+    - name: Install Jenkins
+      package:
+        name: jenkins
+        state: latest
+
+    - name: Config Jenkins
+      service:
+        name: jenkins
+        state: started
+        enabled: true
+

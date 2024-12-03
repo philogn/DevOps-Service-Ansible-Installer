@@ -1,0 +1,11 @@
+---
+  - include_tasks: RedHat_depend.yml
+    when: ansible_os_family == "RadHat"
+
+  - include_tasks: Debian_depend.yml
+    when: ansible_os_family == "Debian"
+  
+  - name: Install GCloud
+    package: 
+      name: google-cloud-cli
+      state: latest

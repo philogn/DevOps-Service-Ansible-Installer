@@ -1,0 +1,10 @@
+install_url: https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.9.0.65466.zip
+install_path: /opt/sonarqube
+
+postgres_pass: sonar
+user: sonar
+user_pass: sonar
+database: sonarqube
+
+service_name: sonar
+

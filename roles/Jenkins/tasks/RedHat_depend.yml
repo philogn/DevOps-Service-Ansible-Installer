@@ -1,0 +1,14 @@
+---
+  - name: Update Packages
+    yum:
+      update_cache: true
+
+  - name: Install dendencies
+    package:
+      name: "{{ item }}"
+      state: latest
+    loop:
+      - java-11-openjdk-devel
+      - java-11-openjdk
+      - firewalld
+

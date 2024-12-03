@@ -1,0 +1,57 @@
+---
+  - include_tasks: RedHat_depend.yml
+    when: ansible_os_family == "RedHat"
+
+  - include_tasks: Debian_depend.yml
+    when: ansible_os_family == "Debian"
+
+  - name: Config Firewalld service
+    service:
+      name: firewalld
+      state: started
+      enabled: true
+
+  - name: Config Firewall
+    firewalld:
+      port: 8081/tcp
+      state: enabled
+      permanent: true
+
+  - name: Extract Nexus
+    unarchive:
+      src: "{{ install_url }}"
+      dest: /opt/
+      remote_src: true
+
+  - name: Rename folder
+    command: bash -c 'mv /opt/nexus* {{ install_path }}' 
+
+  - name: Create nexus user
+    user:
+      name: "{{ user }}"
+      password: "{{ user_pass }}"
+
+  - name: Grant pemission to nexus
+    shell: |
+      chown -R "{{ user }}":"{{ user }}" "{{ install_path }}"
+      chown -R "{{ user }}":"{{ user }}" "{{ install_path }}"/../sonatype-work
+
+  - name: Config Nexus
+    shell: |
+      sed -i '$ a run_as_user="{{ user }}"' "{{ install_path }}"/bin/nexus.rc
+      sed -i "1d" "{{ install_path }}"/bin/nexus.rc
+      mkdir -p /etc/init.d/
+      ln -s "{{ install_path }}"/bin/nexus /etc/init.d/nexus
+      chmod +x /etc/init.d/nexus
+      sed -i 's/2703/1024/g' "{{ install_path }}"/bin/nexus.vmoptions
+
+  - name: Config Nexus service
+    template:
+      src: ./../templates/nexus_service.j2
+      dest: /etc/systemd/system/nexus.service
+
+  - name: Start nexus
+    service:
+      name: nexus
+      state: started
+      enabled: true

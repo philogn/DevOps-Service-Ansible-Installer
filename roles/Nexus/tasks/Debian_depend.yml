@@ -1,0 +1,17 @@
+---
+  - name: Update packages
+    apt:
+      update_cache: true
+
+  - name: Install dependencies
+    package:
+      name: "{{ item }}"
+      state: latest
+    loop:
+      - openjdk-17-jdk
+      - firewalld
+
+  - name: Switch Java version
+    alternatives: 
+      name: java
+      path: /usr/lib/jvm/java-17-openjdk-amd64/bin/java

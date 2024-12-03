@@ -1,0 +1,21 @@
+---
+      - name: Update Package
+        become: true
+        yum:
+          update_cache: yes
+        
+      - name: Install Dependencies
+        become: true
+        yum:
+          name: "{{ item }}"
+          state: present
+        with_items:
+          - curl
+          - postfix
+          - policycoreutils
+          - openssh-server
+          - openssh-clients
+          - firewalld
+
+      - name: Install Gitlab repo
+        command: curl -s https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | bash

@@ -1,0 +1,23 @@
+--- 
+  - name: Update packages
+    yum:
+      update_cache: true
+
+  - name: Install dependencies
+    package:
+      name: "{{ item }}"
+      state: latest
+    loop:
+      - java-17-openjdk-devel
+      - firewalld
+
+  - name: Switch to Java17
+    alternatives:
+      name: java
+      path: /usr/lib/jvm/java-17-openjdk-17.0.6.0.10-3.el9.x86_64/bin/java
+
+  - name: Configure SELinux
+    shell: |
+      setenforce 0
+      sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
